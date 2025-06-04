@@ -34,8 +34,16 @@ docker compose up -d
 npx drizzle-kit push
 ```
 
-4. Seed the database
+4. Seed the database with one of the following two options:
+
+**Method 1**
 
 ```bash
 curl -X POST http://localhost:3000/api/seed
+```
+
+**Method 2**
+
+```bash
+npm run seed
 ```
