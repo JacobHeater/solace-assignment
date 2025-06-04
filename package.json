@@ -11,7 +11,7 @@
     "db:push": "drizzle-kit push",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx --env-file=.env ./scripts/db/seed.ts",
-    "db:initialize": "db:generate && db:migrate && db:seed"
+    "db:initialize": "npm run db:generate && npm run db:migrate && npm run db:seed"
   },
   "dependencies": {
     "drizzle-orm": "^0.32.1",

@@ -12,11 +12,13 @@ export default function Home() {
   const [advocates, setAdvocates] = useState<SelectAdvocate[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [initialized, setInitailized] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
   const router = useRouter();
 
   useEffect(() => {
     const fetchAdvocates = async () => {
+      setLoading(true);
       console.log("fetching advocates...");
       try {
         let url = '/api/advocates';
@@ -37,6 +39,8 @@ export default function Home() {
         setInitailized(true);
       } catch (error) {
         console.error("Failed to fetch advocates:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -55,7 +59,7 @@ export default function Home() {
   return (
     <>
       <div className="m-24">
-        {initialized && (
+        {!loading && initialized && (
           <div className="mb-10 flex flex-row align-items-center">
             <div className="mt-5">
               <span className="font-bold text-2xl mr-8 m">Search</span>
@@ -101,16 +105,23 @@ export default function Home() {
             </tbody>
           </table>
         )}
-        {advocates.length === 0 && searchTerm.trim() && (
+        {!loading && advocates.length === 0 && debouncedSearchTerm.trim() && (
           <div className="text-center">
-            <span className="text-2xl align-middle inline-block">🥴</span> No records found matching &quot;{searchTerm}&quot;
+            <span className="text-2xl align-middle inline-block">🥴</span> No records found matching &quot;{debouncedSearchTerm}&quot;
           </div>
         )}
-        {advocates.length === 0 && !searchTerm.trim() && (
+        {!loading && advocates.length === 0 && !debouncedSearchTerm.trim() && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
               No data to display. Please try refreshing the page and if the issue persists, contact customer care&nbsp;
               <a href="tel:555-555-1212" className="underline text-[var(--solace-green)]">555-555-1212</a>.
+            </div>
+          </div>
+        )}
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              Loading advocate data. Please wait...
             </div>
           </div>
         )}
