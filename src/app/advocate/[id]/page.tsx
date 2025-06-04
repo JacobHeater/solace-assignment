@@ -99,7 +99,9 @@ export default function AdvocateView() {
                                 let value: AdvocatePropValue = advocate[item.col];
 
                                 if (item.col === 'specialties') {
-                                    value = (value as string[]).map((str, i) => <Chip key={i} text={str} />);
+                                    value = (value as string[]).map((str, i) => <div className="mb-2">
+                                        <Chip key={i} text={str} />
+                                    </div>);
                                 }
 
                                 return (
