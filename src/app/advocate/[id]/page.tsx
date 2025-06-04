@@ -66,7 +66,7 @@ export default function AdvocateView() {
                 {advocate && (
                     <div className="w-[600px] mx-auto">
                         <div className="w-[300px] h-[300px] border border-gray-300 mx-auto">
-                            <Image width={300} height={300} src="/profile.png" alt="Profile picture" />
+                            <Image width={300} height={300} src="/profile.png" alt="Profile picture" priority />
                         </div>
                         <div className="flex flex-col w-full mt-10">
                             {([{
@@ -99,8 +99,8 @@ export default function AdvocateView() {
                                 let value: AdvocatePropValue = advocate[item.col];
 
                                 if (item.col === 'specialties') {
-                                    value = (value as string[]).map((str, i) => <div className="mb-2">
-                                        <Chip key={i} text={str} />
+                                    value = (value as string[]).map((str, i) => <div key={i} className="mb-2">
+                                        <Chip text={str} />
                                     </div>);
                                 }
 
