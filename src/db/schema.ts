@@ -23,3 +23,4 @@ export const advocates = pgTable("advocates", {
 export type SelectAdvocate = typeof advocates.$inferSelect;
 export type InsertAdvocate = typeof advocates.$inferInsert;
 export type GeneratedAdvocate = Omit<SelectAdvocate, 'id' | 'createdAt'>
+export type PublicAdvocate = Omit<SelectAdvocate, 'id'>;
