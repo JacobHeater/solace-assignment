@@ -1,6 +1,7 @@
+import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import "./globals.css";
+import { ToastContainer } from "react-toastify";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +17,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <header className="fixed z-50 top-0 left-0 w-full bg-[var(--solace-green)] text-[var(--solace-foreground)] py-5 pl-[90px] font-bold text-xl shadow-b-lg drop-shadow-[0_4px_6px_rgba(0,0,0,0.4)]">
+          <div>Solace Advocates</div>
+        </header>
+        <main>
+          {children}
+        </main>
+        <ToastContainer position="bottom-right" />
+      </body>
     </html>
   );
 }

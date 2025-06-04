@@ -1,0 +1,121 @@
+'use client';
+
+import { Button } from "@/app/components/button";
+import { Chip } from "@/app/components/chip";
+import { PublicAdvocate } from "@/db/schema";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
+import { toast } from 'react-toastify';
+
+type AdvocatePropsArray = Array<{
+    label: string;
+    col: keyof PublicAdvocate
+}>;
+type AdvocatePropValue = string | string[] | number | Date | null | ReactNode;
+
+export default function AdvocateView() {
+    const { id } = useParams();
+    const [advocate, setAdvocate] = useState<PublicAdvocate | null>(null);
+    const [loading, setLoading] = useState(true);
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchAdvocate = async () => {
+            setLoading(true);
+            const response = await fetch(`/api/advocate/${id}`);
+
+            if (!response.ok) {
+                toast.error(`Could not load the advocate you were looking for.`);
+                return;
+            }
+
+            const advocateResponse: PublicAdvocate | null = await response.json();
+            setAdvocate(advocateResponse);
+
+            if (advocateResponse === null) {
+                toast.warn(`No advocate was found using id: ${id}`);
+                return;
+            }
+            setLoading(false);
+        };
+
+        fetchAdvocate();
+    }, []);
+
+    return (
+        <>
+            <div className="mt-24">
+                {loading && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                            Loading advocate data. Please wait...
+                        </div>
+                    </div>
+                )}
+                {!advocate && !loading && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                            🥴 Sorry! We couldn't find an Advocate by that id. Please go back
+                            to the <Link href="/" className="underline text-[var(--solace-green)]">home</Link> page, and try searching for that
+                            advocate again.
+                        </div>
+                    </div>
+                )}
+                {advocate && (
+                    <div className="w-[600px] mx-auto">
+                        <div className="w-[300px] h-[300px] border border-gray-300 mx-auto">
+                            <Image width={300} height={300} src="/profile.png" alt="Profile picture" />
+                        </div>
+                        <div className="flex flex-col w-full mt-10">
+                            {([{
+                                label: 'First Name',
+                                col: 'firstName'
+                            },
+                            {
+                                label: 'Last Name',
+                                col: 'lastName'
+                            },
+                            {
+                                label: 'Phone Number',
+                                col: 'phoneNumber'
+                            },
+                            {
+                                label: 'Degree',
+                                col: 'degree'
+                            },
+                            {
+                                label: 'Years of Experience',
+                                col: 'yearsOfExperience'
+                            },
+                            {
+                                label: 'City',
+                                col: 'city'
+                            }, {
+                                label: 'Specialties',
+                                col: 'specialties'
+                            }] as AdvocatePropsArray).map((item) => {
+                                let value: AdvocatePropValue = advocate[item.col];
+
+                                if (item.col === 'specialties') {
+                                    value = (value as string[]).map((str, i) => <Chip key={i} text={str} />);
+                                }
+
+                                return (
+                                    <div className="flex flex-row mb-4" key={item.col}>
+                                        <div className="font-bold">{item.label}</div>
+                                        <div className="ml-auto">{value as ReactNode}</div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="text-center mt-10">
+                            <Button onClick={() => router.push("/")}>Back to Home Page</Button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
+    );
+}
