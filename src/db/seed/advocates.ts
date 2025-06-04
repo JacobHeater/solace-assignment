@@ -1,10 +1,10 @@
 import { generateRandomNumber } from "@/app/helpers/random-number";
 import { randomSpecialties } from "./specialties";
-import { Advocate } from "../types/advocate";
+import { GeneratedAdvocate } from "../schema";
 
-export const advocateData: Advocate[] = Array.from({ length: 15 }, generateRandomAdvocate);
+export const advocateData: GeneratedAdvocate[] = Array.from({ length: 15 }, generateRandomAdvocate);
 
-function generateRandomAdvocate(): Advocate {
+function generateRandomAdvocate(): GeneratedAdvocate {
   return {
     firstName: generateRandomFirstName(),
     lastName: generateRandomLastName(),

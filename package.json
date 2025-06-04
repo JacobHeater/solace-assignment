@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "generate": "drizzle-kit generate",
-    "migrate:up": "tsx --env-file=.env ./src/db/migrate.ts",
+    "migrate:up": "drizzle-kit push",
     "seed": "tsx --env-file=.env ./scripts/db/seed.ts"
   },
   "dependencies": {

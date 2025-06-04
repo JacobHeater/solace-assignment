@@ -14,7 +14,7 @@ import { keyInYN } from 'readline-sync';
     }
     const records = await db.insert(advocates).values(advocateData).returning();
 
-    console.log(`Seeded ${records.length} advocates:`);
+    console.log(`Seeded ${records.length} advocates.`);
     process.exit(0);
   } catch (error) {
     console.error("Error seeding advocates:", error);
