@@ -12,6 +12,7 @@ import { keyInYN } from 'readline-sync';
     } else {
       console.log("Skipping clearing existing advocates.");
     }
+
     const records = await db.insert(advocates).values(advocateData).returning();
 
     console.log(`Seeded ${records.length} advocates.`);
