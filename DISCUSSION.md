@@ -29,6 +29,10 @@
   I'd prefer to aim for an express backend for defining API interactions
   and routes.
 
+## General Improvements
+
+- I would add unit tests, API tests, and end-to-end tests.
+
 ## Final Thoughts
 
 I believe I was able to make reasonable improvements to the user experience
