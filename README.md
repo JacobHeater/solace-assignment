@@ -28,6 +28,10 @@ docker compose up -d
 
 2. Create a `solaceassignment` database.
 
+```bash
+npm run generate
+```
+
 3. Push migration to the database
 
 ```bash
