@@ -9,7 +9,7 @@
     "lint": "next lint",
     "generate": "drizzle-kit generate",
     "migrate:up": "tsx --env-file=.env ./src/db/migrate.ts",
-    "seed": "tsx --env-file=.env ./src/db/seed/index.ts"
+    "seed": "tsx --env-file=.env ./scripts/db/seed.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.32.1",
