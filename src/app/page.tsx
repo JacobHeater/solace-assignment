@@ -60,53 +60,55 @@ export default function Home() {
   };
 
   return (
-    <main style={{ margin: "24px" }}>
-      <h1>Solace Advocates</h1>
-      <br />
-      <br />
-      <div>
-        <p>Search</p>
-        <p>
-          Searching for: <span id="search-term">{searchTerm}</span>
-        </p>
-        <input style={{ border: "1px solid black" }} onChange={onChange} value={searchTerm} />
-        <button onClick={onClick}>Reset Search</button>
-      </div>
-      <br />
-      <br />
-      <table>
-        <thead>
-          <tr>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>City</th>
-            <th>Degree</th>
-            <th>Specialties</th>
-            <th>Years of Experience</th>
-            <th>Phone Number</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredAdvocates.map((advocate) => {
-            return (
-              <tr key={advocate.phoneNumber}>
-                <td>{advocate.firstName}</td>
-                <td>{advocate.lastName}</td>
-                <td>{advocate.city}</td>
-                <td>{advocate.degree}</td>
-                <td>
-                  {advocate.specialties.map((s) => (
-                    <div key={s}>{s}</div>
-                  ))}
-                </td>
-                <td>{advocate.yearsOfExperience}</td>
-                <td>{advocate.phoneNumber}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <ToastContainer />
-    </main>
+    <>
+      <header>
+        <div className="fixed top-0 left-0 w-full bg-[var(--solace-green)] text-[var(--solace-foreground)] py-5 px-4 font-bold text-xl shadow-b-lg drop-shadow-[0_4px_6px_rgba(0,0,0,0.4)]">Solace Advocates</div>
+      </header>
+      <main className="m-24">
+        <div>
+          <p>Search</p>
+          <p>
+            Searching for: <span id="search-term">{searchTerm}</span>
+          </p>
+          <input style={{ border: "1px solid black" }} onChange={onChange} value={searchTerm} />
+          <button onClick={onClick}>Reset Search</button>
+        </div>
+        <br />
+        <br />
+        <table>
+          <thead>
+            <tr>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>City</th>
+              <th>Degree</th>
+              <th>Specialties</th>
+              <th>Years of Experience</th>
+              <th>Phone Number</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredAdvocates.map((advocate) => {
+              return (
+                <tr key={advocate.phoneNumber}>
+                  <td>{advocate.firstName}</td>
+                  <td>{advocate.lastName}</td>
+                  <td>{advocate.city}</td>
+                  <td>{advocate.degree}</td>
+                  <td>
+                    {advocate.specialties.map((s) => (
+                      <div key={s}>{s}</div>
+                    ))}
+                  </td>
+                  <td>{advocate.yearsOfExperience}</td>
+                  <td>{advocate.phoneNumber}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <ToastContainer />
+      </main>
+    </>
   );
 }
