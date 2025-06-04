@@ -61,52 +61,57 @@ export default function Home() {
 
   return (
     <>
-      <header>
-        <div className="fixed top-0 left-0 w-full bg-[var(--solace-green)] text-[var(--solace-foreground)] py-5 px-4 font-bold text-xl shadow-b-lg drop-shadow-[0_4px_6px_rgba(0,0,0,0.4)]">Solace Advocates</div>
+      <header className="fixed z-50 top-0 left-0 w-full bg-[var(--solace-green)] text-[var(--solace-foreground)] py-5 px-4 font-bold text-xl shadow-b-lg drop-shadow-[0_4px_6px_rgba(0,0,0,0.4)]">
+        <div>Solace Advocates</div>
       </header>
       <main className="m-24">
-        <div>
-          <p>Search</p>
-          <p>
-            Searching for: <span id="search-term">{searchTerm}</span>
-          </p>
-          <input style={{ border: "1px solid black" }} onChange={onChange} value={searchTerm} />
-          <button onClick={onClick}>Reset Search</button>
+        <div className="mb-10 flex flex-row align-items-center">
+          <div className="mt-5">
+            <span className="font-bold text-2xl mr-8 m">Search</span>
+            <input
+              type="text"
+              onChange={onChange} value={searchTerm}
+              className="rounded-2xl py-1 px-2 border-[1.5px] focus:border-[1.5px] outline-none focus:outline-none focus:ring-0 w-[30vw]"
+              placeholder="Enter search term" />
+            <button
+              className="bg-[var(--solace-green)] text-[var(--solace-foreground)] ml-8 py-1 px-2 rounded drop-shadow active:drop-shadow-none"
+              onClick={onClick}>Reset Search</button>
+          </div>
         </div>
-        <br />
-        <br />
-        <table>
-          <thead>
-            <tr>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>City</th>
-              <th>Degree</th>
-              <th>Specialties</th>
-              <th>Years of Experience</th>
-              <th>Phone Number</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredAdvocates.map((advocate) => {
-              return (
-                <tr key={advocate.phoneNumber}>
-                  <td>{advocate.firstName}</td>
-                  <td>{advocate.lastName}</td>
-                  <td>{advocate.city}</td>
-                  <td>{advocate.degree}</td>
-                  <td>
-                    {advocate.specialties.map((s) => (
-                      <div key={s}>{s}</div>
-                    ))}
-                  </td>
-                  <td>{advocate.yearsOfExperience}</td>
-                  <td>{advocate.phoneNumber}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        {filteredAdvocates.length > 0 ? (
+          <table className="w-full border-[1px] border-[var(--solace-green)]">
+            <thead>
+              <tr className="bg-[var(--solace-green)] text-[var(--solace-foreground)] h-14">
+                {['First Name', 'Last Name', 'City', 'Degree', 'Specialties', 'Years of Experience', 'Phone Number'].map((col, i) => (
+                  <th className="px-2 py-1" key={i}>{col}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAdvocates.map((advocate) => {
+                return (
+                  <tr key={advocate.phoneNumber} className="odd:bg-gray-100 h-14">
+                    <td className="pl-5">{advocate.firstName}</td>
+                    <td>{advocate.lastName}</td>
+                    <td>{advocate.city}</td>
+                    <td className="w-32 text-center">{advocate.degree}</td>
+                    <td>
+                      {advocate.specialties.map((s) => (
+                        <div key={s} className="inline-block px-2 py-1 rounded-2xl bg-[var(--chip-green)] mr-3 drop-shadow">{s}</div>
+                      ))}
+                    </td>
+                    <td>{advocate.yearsOfExperience}</td>
+                    <td className="pr-5">{advocate.phoneNumber}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        ) : (
+          <div className="text-center">
+            <span className="text-2xl align-middle inline-block">🥴</span> No records found matching &quot;{searchTerm}&quot;
+          </div>
+        )}
         <ToastContainer />
       </main>
     </>
