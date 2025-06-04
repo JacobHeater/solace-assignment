@@ -21,6 +21,15 @@ export async function GET(req: NextRequest) {
             advocates.degree,
             advocates.phoneNumber,
           ].map((col) => ilike(col, `%${searchTerm}%`)),
+          // There appears to be a bug in drizzle-kit where
+          // jsonb values are being doubly serialized, as is
+          // the case with advocates.specialties, the values
+          // appear like this.
+          //
+          // "[\"String 1\", \"String 2\"]"
+          // 
+          // In order to search in this doubly serialized array,
+          // I need to deserialize and then search.
           sql`
             EXISTS (
              SELECT 1 FROM jsonb_array_elements_text((${

@@ -11,7 +11,7 @@ import { Button } from "./components/button";
 export default function Home() {
   const [advocates, setAdvocates] = useState<SelectAdvocate[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [initialized, setInitailized] = useState(false);
+  const [initialized, setInitialized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
   const router = useRouter();
@@ -31,12 +31,12 @@ export default function Home() {
 
         if (!response.ok) {
           toast.error('Could not connect to API to retrieve advocates');
-          setInitailized(false);
+          setInitialized(false);
           return;
         }
         const jsonResponse = await response.json();
         setAdvocates(jsonResponse.data as SelectAdvocate[]);
-        setInitailized(true);
+        setInitialized(true);
       } catch (error) {
         console.error("Failed to fetch advocates:", error);
       } finally {
