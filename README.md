@@ -28,14 +28,35 @@ docker compose up -d
 
 2. Create a `solaceassignment` database.
 
+```bash
+npm run db:generate
+```
+
 3. Push migration to the database
 
 ```bash
-npx drizzle-kit push
+npm run db:migrate
 ```
 
-4. Seed the database
+4. Seed the database with one of the following two options:
+
+**Method 1**
 
 ```bash
 curl -X POST http://localhost:3000/api/seed
+```
+
+**Method 2**
+
+```bash
+npm run db:seed
+```
+
+### Fast Tracking the DB Setup
+
+Once you have postgres running, and you are ready to create the `solaceassignment`
+database, you can fast track the setup by using the `db:initialize` npm script.
+
+```bash
+npm run db:initialize
 ```
