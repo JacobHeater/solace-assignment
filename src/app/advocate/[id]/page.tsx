@@ -2,22 +2,24 @@
 
 import { Button } from "@/app/components/button";
 import { Chip } from "@/app/components/chip";
-import { PublicAdvocate } from "@/db/schema";
+import { IAdvocate } from "@/app/types/advocate";
+import { ISpecialty } from "@/app/types/specialty";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import { toast } from 'react-toastify';
 
-type AdvocatePropsArray = Array<{
+type AdvocatePropValue = string | Date | number | ISpecialty[] | React.ReactNode;
+type AdvocatePropItem = {
     label: string;
-    col: keyof PublicAdvocate
-}>;
-type AdvocatePropValue = string | string[] | number | Date | null | ReactNode;
+    col: keyof IAdvocate;
+};
+type AdvocatePropsArray = AdvocatePropItem[];
 
 export default function AdvocateView() {
     const { id } = useParams();
-    const [advocate, setAdvocate] = useState<PublicAdvocate | null>(null);
+    const [advocate, setAdvocate] = useState<IAdvocate | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
@@ -31,7 +33,7 @@ export default function AdvocateView() {
                 return;
             }
 
-            const advocateResponse: PublicAdvocate | null = await response.json();
+            const advocateResponse: IAdvocate | null = await response.json();
             setAdvocate(advocateResponse);
 
             if (advocateResponse === null) {
@@ -96,11 +98,12 @@ export default function AdvocateView() {
                                 label: 'Specialties',
                                 col: 'specialties'
                             }] as AdvocatePropsArray).map((item) => {
+                                
                                 let value: AdvocatePropValue = advocate[item.col];
 
                                 if (item.col === 'specialties') {
-                                    value = (value as string[]).map((str, i) => <div key={i} className="mb-2">
-                                        <Chip text={str} />
+                                    value = (value as ISpecialty[]).map((spc, i) => <div key={i} className="mb-2">
+                                        <Chip text={spc.title} />
                                     </div>);
                                 }
 

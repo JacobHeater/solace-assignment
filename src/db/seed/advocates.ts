@@ -1,5 +1,4 @@
 import { generateRandomNumber } from "@/app/helpers/random-number";
-import { randomSpecialties } from "./specialties";
 import { GeneratedAdvocate } from "../schema";
 
 export const advocateData: GeneratedAdvocate[] = Array.from({ length: 15 }, generateRandomAdvocate);
@@ -10,7 +9,6 @@ function generateRandomAdvocate(): GeneratedAdvocate {
     lastName: generateRandomLastName(),
     city: generateRandomCity(),
     degree: generateRandomDegree(),
-    specialties: randomSpecialties(2),
     yearsOfExperience: generateRandomNumber(1, 20),
     phoneNumber: generateRandomPhoneNumber(),
   };

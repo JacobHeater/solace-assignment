@@ -1,24 +1,21 @@
-import db from "@/db";
-import { advocates } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { AdvocateRepository } from "@/db/repositories/advocate/advocate-repository";
 import { NextRequest } from "next/server";
+
+const advocateRepo = new AdvocateRepository();;
 
 export async function GET(
   _: NextRequest,
   { params }: { params: { id: string } }
 ) {
   if (!params.id) {
-    throw new ReferenceError('The route param :id is required.')
+    throw new ReferenceError("The route param :id is required.");
   }
 
   if (isNaN(Number(params.id))) {
-    throw new Error('The given id must be a number.')
+    throw new Error("The given id must be a number.");
   }
 
-  const [advocate] = await db
-    .select()
-    .from(advocates)
-    .where(eq(advocates.id, Number(params.id)));
+  const advocate = await advocateRepo.findByIdAsync(Number(params.id));
 
   if (!advocate) {
     return Response.json(null);
