@@ -12,18 +12,22 @@
 
 ## Backend
 
-- I would like to abstract the database interactions utilizing design
+- ~~I would like to abstract the database interactions utilizing design
   patterns, perhaps the repository pattern, and do so for the various
-  tables in the database schema.
+  tables in the database schema.~~
+
+  Resolved by the move to a normalized data structure.
 
 - I would like to implement API interactions for sorting, pagination,
   and other optimizations that would be necessary for larger data sets.
 
-- I noticed an issue with `jsonb` serialization, and I believe it is a
+- ~~I noticed an issue with `jsonb` serialization, and I believe it is a
   bug with drizzle-kit stringifying the specialties before they get
   stored in the database. I would spend more time researching a solution
   to this fix. Nonetheless, I was able to get around it by anticipating
-  that column would be populated by doubly serialized data.
+  that column would be populated by doubly serialized data.~~
+
+  Resolved by the move to a normalized data structure.
 
 - I don't mind the full stack next.js application, but out of familiarity,
   I'd prefer to aim for an express backend for defining API interactions

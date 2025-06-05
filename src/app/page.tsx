@@ -1,15 +1,15 @@
 "use client";
 
-import { SelectAdvocate } from "@/db/schema";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from 'react-toastify';
 import { useDebounce } from "use-debounce";
 import { Chip } from "./components/chip";
 import { Button } from "./components/button";
+import { IAdvocate } from "./types/advocate";
 
 export default function Home() {
-  const [advocates, setAdvocates] = useState<SelectAdvocate[]>([]);
+  const [advocates, setAdvocates] = useState<IAdvocate[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [initialized, setInitialized] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -35,7 +35,7 @@ export default function Home() {
           return;
         }
         const jsonResponse = await response.json();
-        setAdvocates(jsonResponse.data as SelectAdvocate[]);
+        setAdvocates(jsonResponse.data as IAdvocate[]);
         setInitialized(true);
       } catch (error) {
         console.error("Failed to fetch advocates:", error);
@@ -59,19 +59,18 @@ export default function Home() {
   return (
     <>
       <div className="m-24">
-        {!loading && initialized && (
-          <div className="mb-10 flex flex-row align-items-center">
-            <div className="mt-5">
-              <span className="font-bold text-2xl mr-8 m">Search</span>
-              <input
-                type="text"
-                onChange={onSearchTermChange} value={searchTerm}
-                className="rounded-2xl py-1 px-2 border-[1.5px] focus:border-[1.5px] outline-none focus:outline-none focus:ring-0 w-[30vw]"
-                placeholder="Enter search term" />
-                <Button onClick={onResetSearchClick}>Reset Search</Button>
-            </div>
+        <div className="mb-10 flex flex-row align-items-center">
+          <div className="mt-5">
+            <span className="font-bold text-2xl mr-8 m">Search</span>
+            <input
+              type="text"
+              onChange={onSearchTermChange} value={searchTerm}
+              className="rounded-2xl py-1 px-2 border-[1.5px] focus:border-[1.5px] outline-none focus:outline-none focus:ring-0 w-[30vw]"
+              placeholder="Enter search term"
+              disabled={!initialized} />
+            <Button onClick={onResetSearchClick}>Reset Search</Button>
           </div>
-        )}
+        </div>
         {advocates.length > 0 && (
           <table className="w-full border-[1px] border-[var(--solace-green)]">
             <thead>
@@ -91,7 +90,7 @@ export default function Home() {
                     <td className="w-32 text-center">{advocate.degree}</td>
                     <td>
                       {advocate.specialties.map((s, i) => (
-                        <Chip key={i} text={s} />
+                        <Chip key={i} text={s.title} />
                       ))}
                     </td>
                     <td>{advocate.yearsOfExperience}</td>
