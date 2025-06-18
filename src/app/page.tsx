@@ -79,30 +79,28 @@ export default function Home() {
       'phone number'
     ];
 
-    if (!sortableCols.includes(col.toLowerCase())) {
-      return;
-    }
+    if (!sortableCols.includes(col.toLowerCase())) return;
 
     const selectedCol: keyof SelectAdvocate = toCamelCase(col) as keyof SelectAdvocate;
 
-    if (sortCol !== selectedCol) {
-      sortDir = null;
-      setSortDir(null);
+    let nextSortDir: SortDir | null = SortDir.ASC;
+
+    if (sortCol === selectedCol) {
+      switch (sortDir) {
+        case SortDir.ASC:
+          nextSortDir = SortDir.DESC;
+          break;
+        case SortDir.DESC:
+          nextSortDir = null;
+          break;
+        default:
+          nextSortDir = SortDir.ASC;
+          break;
+      }
     }
 
     setSortCol(selectedCol);
-    
-    switch (sortDir) {
-      case SortDir.ASC:
-        setSortDir(SortDir.DESC);
-        break;
-      case SortDir.DESC:
-        setSortDir(null);
-        break;
-      default:
-        setSortDir(SortDir.ASC);
-        break;
-    }
+    setSortDir(nextSortDir);
   };
 
   return (
