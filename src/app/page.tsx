@@ -7,6 +7,9 @@ import { useDebounce } from "use-debounce";
 import { Chip } from "./components/chip";
 import { Button } from "./components/button";
 import { IAdvocate } from "./types/advocate";
+import { SortDir } from "@/db/sort/sort-dir";
+import { SelectAdvocate } from "@/db/schema";
+import { toCamelCase } from '@/app/helpers/string/to-camel-case';
 
 export default function Home() {
   const [advocates, setAdvocates] = useState<IAdvocate[]>([]);
@@ -14,6 +17,8 @@ export default function Home() {
   const [initialized, setInitialized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+  const [sortCol, setSortCol] = useState<keyof SelectAdvocate | null>(null);
+  let [sortDir, setSortDir] = useState<SortDir | null>(null)
   const router = useRouter();
 
   useEffect(() => {
@@ -21,10 +26,18 @@ export default function Home() {
       setLoading(true);
       console.log("fetching advocates...");
       try {
-        let url = '/api/advocates';
+        const url = new URL('api/advocates', window.location.origin);
 
         if (debouncedSearchTerm) {
-          url += `?searchTerm=${debouncedSearchTerm}`;
+          url.searchParams.set('searchTerm', debouncedSearchTerm);
+        }
+
+        if (sortCol) {
+          url.searchParams.set('sortCol', sortCol);
+        }
+
+        if (sortDir) {
+          url.searchParams.set('sortDir', sortDir.toString());
         }
 
         const response = await fetch(url);
@@ -45,7 +58,7 @@ export default function Home() {
     };
 
     fetchAdvocates();
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, sortCol, sortDir]);
 
   const onSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchTerm = e.target.value;
@@ -54,6 +67,42 @@ export default function Home() {
 
   const onResetSearchClick = () => {
     setSearchTerm('');
+  };
+
+  const onColHeaderClick = (col: string) => {
+    const sortableCols = [
+      'first name',
+      'last name',
+      'city',
+      'degree',
+      'years of experience',
+      'phone number'
+    ];
+
+    if (!sortableCols.includes(col.toLowerCase())) {
+      return;
+    }
+
+    const selectedCol: keyof SelectAdvocate = toCamelCase(col) as keyof SelectAdvocate;
+
+    if (sortCol !== selectedCol) {
+      sortDir = null;
+      setSortDir(null);
+    }
+
+    setSortCol(selectedCol);
+    
+    switch (sortDir) {
+      case SortDir.ASC:
+        setSortDir(SortDir.DESC);
+        break;
+      case SortDir.DESC:
+        setSortDir(null);
+        break;
+      default:
+        setSortDir(SortDir.ASC);
+        break;
+    }
   };
 
   return (
@@ -76,7 +125,7 @@ export default function Home() {
             <thead>
               <tr className="bg-[var(--solace-green)] text-[var(--solace-foreground)] h-14">
                 {['First Name', 'Last Name', 'City', 'Degree', 'Specialties', 'Years of Experience', 'Phone Number', 'View'].map((col, i) => (
-                  <th className="px-2 py-1" key={i}>{col}</th>
+                  <th onClick={() => onColHeaderClick(col)} className="px-2 py-1" key={i}>{col}</th>
                 ))}
               </tr>
             </thead>

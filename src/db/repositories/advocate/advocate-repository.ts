@@ -8,8 +8,9 @@ import {
   Specialties,
   specialties,
 } from "@/db/schema";
-import { eq, ilike, or, sql } from "drizzle-orm";
+import { asc, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { IRepository } from "@/db/repositories/repository";
+import { SortDir } from "@/db/sort/sort-dir";
 
 type AmalgamatedType = {
   advocates: SelectAdvocate;
@@ -31,6 +32,25 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
         eq(advocateSpecialties.specialtyId, specialties.id)
       );
 
+    return this.amalgamateJoinedRowsToIAdvocate(data);
+  }
+
+  async findAllAsyncSorted(col: keyof SelectAdvocate, dir: SortDir) {
+    const drizzleSort = dir === SortDir.ASC ? asc : desc;
+
+    const data = await db
+      .select()
+      .from(advocates)
+      .leftJoin(
+        advocateSpecialties,
+        eq(advocateSpecialties.advocateId, advocates.id)
+      )
+      .leftJoin(
+        specialties,
+        eq(advocateSpecialties.specialtyId, specialties.id)
+      )
+      .orderBy(drizzleSort(advocates[col]));
+    
     return this.amalgamateJoinedRowsToIAdvocate(data);
   }
 
