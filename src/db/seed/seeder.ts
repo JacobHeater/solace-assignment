@@ -5,6 +5,8 @@ import {
   EntityTags,
   entityTags,
   tagTypes,
+  entities,
+  SelectAdvocate,
 } from "../schema";
 import { advocateData } from "./advocates";
 import { specialtiesTagsData, randomSpecialties, specialtiesTagTypeData } from "./specialties";
@@ -23,17 +25,25 @@ export async function seeder() {
     })))
     .returning();
 
-  const advocateRecords = await db
-    .insert(advocates)
-    .values(advocateData)
-    .returning();
+  const advocateRecords: SelectAdvocate[] = [];
+  for (const advocate of advocateRecords) {
+    const [entity] = await db
+      .insert(entities)
+      .values({})
+      .returning();
+    const [advocateRecord] = await db
+      .insert(advocates)
+      .values(advocate)
+      .returning();
+    advocateRecords.push(advocateRecord);
+  }
 
-  for (const adv of advocateRecords) {
+  for (const adv of advocateData) {
     const advocateSpecialtiesEntries: EntityTags[] = randomSpecialties(
       2,
       specialtiesTagsRecords
     ).map((tag) => ({
-      advocateId: adv.id,
+      entityId: adv.entityId,
       tagId: tag.id!,
       createdAt: null
     }));
