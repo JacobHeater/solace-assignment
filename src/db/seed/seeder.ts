@@ -2,8 +2,8 @@ import db from "..";
 import {
   tags,
   advocates,
-  AdvocateTags,
-  advocateTags,
+  EntityTags,
+  entityTags,
   tagTypes,
 } from "../schema";
 import { advocateData } from "./advocates";
@@ -29,7 +29,7 @@ export async function seeder() {
     .returning();
 
   for (const adv of advocateRecords) {
-    const advocateSpecialtiesEntries: AdvocateTags[] = randomSpecialties(
+    const advocateSpecialtiesEntries: EntityTags[] = randomSpecialties(
       2,
       specialtiesTagsRecords
     ).map((tag) => ({
@@ -39,7 +39,7 @@ export async function seeder() {
     }));
 
     await db
-      .insert(advocateTags)
+      .insert(entityTags)
       .values(advocateSpecialtiesEntries)
       .returning();
   }
@@ -50,7 +50,7 @@ export async function seeder() {
 }
 
 export async function reset() {
-  await db.delete(advocateTags);
+  await db.delete(entityTags);
   await db.delete(advocates);
   await db.delete(tags);
 }

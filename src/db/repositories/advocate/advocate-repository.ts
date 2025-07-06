@@ -2,8 +2,10 @@ import { IAdvocate } from "@/app/types/advocate";
 import db from "@/db";
 import {
   advocates,
-  AdvocateTags,
-  advocateTags,
+  Entities,
+  entities,
+  EntityTags,
+  entityTags,
   SelectAdvocate,
   Tags,
   tags,
@@ -16,7 +18,8 @@ import { TagType } from "@/app/types/tag";
 
 type AmalgamatedType = {
   advocates: SelectAdvocate;
-  advocate_tags: AdvocateTags | null; 
+  entities: Entities | null;
+  entity_tags: EntityTags | null; 
   tags: Tags | null;
   tag_types: TagTypes | null;
 };
@@ -26,13 +29,16 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
     const data = await db
       .select()
       .from(advocates)
+      .leftJoin(entities,
+        eq(entities.id, advocates.entityId)
+      )
       .leftJoin(
-        advocateTags,
-        eq(advocateTags.advocateId, advocates.id)
+        entityTags,
+        eq(entityTags.entityId, entities.id)
       )
       .leftJoin(
         tags,
-        eq(tags.id, advocateTags.tagId)
+        eq(tags.id, entityTags.tagId)
       )
       .leftJoin(
         tagTypes,
@@ -47,12 +53,16 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
       .select()
       .from(advocates)
       .innerJoin(
-        advocateTags,
-        eq(advocateTags.advocateId, advocates.id)
+        entities,
+        eq(entities.id, advocates.entityId)
+      )
+      .innerJoin(
+        entityTags,
+        eq(entityTags.entityId, entities.id)
       )
       .innerJoin(
         tags,
-        eq(tags.id, advocateTags.tagId)
+        eq(tags.id, entityTags.tagId)
       )
       .innerJoin(
         tagTypes,
@@ -71,12 +81,16 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
         .select()
         .from(advocates)
         .innerJoin(
-          advocateTags,
-          eq(advocateTags.advocateId, advocates.id)
+          entities,
+          eq(entityTags.entityId, entities.id)
+        )
+        .innerJoin(
+          entityTags,
+          eq(entityTags.entityId, advocates.id)
         )
         .innerJoin(
           tags,
-          eq(tags.id, advocateTags.tagId)
+          eq(tags.id, entityTags.tagId)
         )
         .innerJoin(
           tagTypes,
@@ -118,9 +132,9 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
         });
       }
 
-      if (row.advocate_tags && row.tags && row.tag_types) {
+      if (row.entity_tags && row.tags && row.tag_types) {
         advocateMap.get(advocateId)?.tags.push({
-          createdAt: row.advocate_tags.createdAt,
+          createdAt: row.entity_tags.createdAt,
           description: row.tags.description,
           title: row.tags.title,
           tagType: row.tag_types.title as TagType

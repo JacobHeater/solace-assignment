@@ -6,10 +6,17 @@ import {
   serial,
   timestamp,
   unique,
-  primaryKey} from "drizzle-orm/pg-core";
+  primaryKey,
+} from "drizzle-orm/pg-core";
+
+export const entities = pgTable("entities", {
+  id: serial("id").primaryKey(),
+  createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`)
+});
 
 export const advocates = pgTable("advocates", {
   id: serial("id").primaryKey(),
+  entityId: integer("entity_id").notNull().references(() => entities.id),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   city: text("city").notNull(),
@@ -41,19 +48,19 @@ export const tags = pgTable(
       .references(() => tagTypes.id),
     title: text("title").notNull(),
     description: text("description").notNull(),
-    createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`)
+    createdAt: timestamp("created_at").default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => ({
-    uniqueTitle: unique().on(table.title).nullsNotDistinct()
+    uniqueTitle: unique().on(table.title).nullsNotDistinct(),
   })
 );
 
-export const advocateTags = pgTable(
-  "advocate_tags",
+export const entityTags = pgTable(
+  "entity_tags",
   {
-    advocateId: integer("advocate_id")
+    entityId: integer("entity_id")
       .notNull()
-      .references(() => advocates.id),
+      .references(() => entities.id),
     tagId: integer("tag_id")
       .notNull()
       .references(() => tags.id),
@@ -61,18 +68,20 @@ export const advocateTags = pgTable(
   },
   (table) => ({
     pk: primaryKey({
-      columns: [table.advocateId, table.tagId],
+      columns: [table.entityId, table.tagId],
     }),
   })
 );
 
 export type SelectAdvocate = typeof advocates.$inferSelect;
+export type Entities = typeof entities.$inferSelect;
+export type InsertEntities = typeof entities.$inferInsert;
 export type Tags = typeof tags.$inferSelect;
 export type InsertTags = typeof tags.$inferInsert;
 export type TagTypes = typeof tagTypes.$inferSelect;
 export type InsertTagTypes = typeof tagTypes.$inferInsert;
-export type AdvocateTags = typeof advocateTags.$inferSelect;
-export type InsertAdvocateTags = typeof advocateTags.$inferInsert;
+export type EntityTags = typeof entityTags.$inferSelect;
+export type InsertEntityTags = typeof entityTags.$inferInsert;
 export type InsertAdvocate = typeof advocates.$inferInsert;
 export type GeneratedAdvocate = Omit<SelectAdvocate, "id" | "createdAt">;
 export type PublicAdvocate = Omit<SelectAdvocate, "id">;
