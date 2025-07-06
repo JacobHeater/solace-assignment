@@ -3,14 +3,14 @@
 import { Button } from "@/app/components/button";
 import { Chip } from "@/app/components/chip";
 import { IAdvocate } from "@/app/types/advocate";
-import { ISpecialty } from "@/app/types/specialty";
+import { ITag, TagType } from "@/app/types/tag";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import { toast } from 'react-toastify';
 
-type AdvocatePropValue = string | Date | number | ISpecialty[] | React.ReactNode;
+type AdvocatePropValue = string | Date | number | ITag[] | React.ReactNode;
 type AdvocatePropItem = {
     label: string;
     col: keyof IAdvocate;
@@ -96,14 +96,14 @@ export default function AdvocateView() {
                                 col: 'city'
                             }, {
                                 label: 'Specialties',
-                                col: 'specialties'
+                                col: 'tags'
                             }] as AdvocatePropsArray).map((item) => {
-                                
+
                                 let value: AdvocatePropValue = advocate[item.col];
 
-                                if (item.col === 'specialties') {
-                                    value = (value as ISpecialty[]).map((spc, i) => <div key={i} className="mb-2">
-                                        <Chip text={spc.title} />
+                                if (item.col === 'tags') {
+                                    value = (value as ITag[]).filter((tag) => tag.tagType === TagType.Specialty).map((tag, i) => <div key={i} className="mb-2">
+                                        <Chip text={tag.title} />
                                     </div>);
                                 }
 

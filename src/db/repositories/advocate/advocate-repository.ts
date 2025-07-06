@@ -2,19 +2,23 @@ import { IAdvocate } from "@/app/types/advocate";
 import db from "@/db";
 import {
   advocates,
-  AdvocateSpecialties,
-  advocateSpecialties,
+  AdvocateTags,
+  advocateTags,
   SelectAdvocate,
-  Specialties,
-  specialties,
+  Tags,
+  tags,
+  TagTypes,
+  tagTypes,
 } from "@/db/schema";
-import { eq, ilike, or, sql } from "drizzle-orm";
+import { eq, ilike, or, sql, } from "drizzle-orm";
 import { IRepository } from "@/db/repositories/repository";
+import { TagType } from "@/app/types/tag";
 
 type AmalgamatedType = {
   advocates: SelectAdvocate;
-  advocate_specialties: AdvocateSpecialties | null;
-  specialties: Specialties | null;
+  advocate_tags: AdvocateTags | null; 
+  tags: Tags | null;
+  tag_types: TagTypes | null;
 };
 
 export class AdvocateRepository implements IRepository<IAdvocate> {
@@ -23,12 +27,16 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
       .select()
       .from(advocates)
       .leftJoin(
-        advocateSpecialties,
-        eq(advocateSpecialties.advocateId, advocates.id)
+        advocateTags,
+        eq(advocateTags.advocateId, advocates.id)
       )
       .leftJoin(
-        specialties,
-        eq(advocateSpecialties.specialtyId, specialties.id)
+        tags,
+        eq(tags.id, advocateTags.tagId)
+      )
+      .leftJoin(
+        tagTypes,
+        eq(tagTypes.id, tags.tagTypeId)
       );
 
     return this.amalgamateJoinedRowsToIAdvocate(data);
@@ -39,12 +47,16 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
       .select()
       .from(advocates)
       .innerJoin(
-        advocateSpecialties,
-        eq(advocateSpecialties.advocateId, advocates.id)
+        advocateTags,
+        eq(advocateTags.advocateId, advocates.id)
       )
       .innerJoin(
-        specialties,
-        eq(specialties.id, advocateSpecialties.specialtyId)
+        tags,
+        eq(tags.id, advocateTags.tagId)
+      )
+      .innerJoin(
+        tagTypes,
+        eq(tagTypes.id, tags.tagTypeId)
       )
       .where(eq(advocates.id, id));
 
@@ -59,12 +71,16 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
         .select()
         .from(advocates)
         .innerJoin(
-          advocateSpecialties,
-          eq(advocateSpecialties.advocateId, advocates.id)
+          advocateTags,
+          eq(advocateTags.advocateId, advocates.id)
         )
         .innerJoin(
-          specialties,
-          eq(advocateSpecialties.specialtyId, specialties.id)
+          tags,
+          eq(tags.id, advocateTags.tagId)
+        )
+        .innerJoin(
+          tagTypes,
+          eq(tags.tagTypeId, tagTypes.id)
         )
         .where(
           or(
@@ -75,8 +91,8 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
               advocates.degree,
               advocates.phoneNumber,
             ].map((col) => ilike(col, `%${term}%`)),
-            ilike(specialties.title, `%${term}%`),
-            ilike(specialties.description, `%${term}%`),
+            ilike(tags.title, `%${term}%`),
+            ilike(tags.description, `%${term}%`),
             sql`CAST(${
               advocates.yearsOfExperience
             } AS TEXT) ILIKE ${`%${term}%`}`
@@ -98,16 +114,16 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
       if (!advocateMap.has(advocateId)) {
         advocateMap.set(advocateId, {
           ...row.advocates,
-          specialties: [],
+          tags: [],
         });
       }
 
-      if (row.specialties && row.advocate_specialties) {
-        advocateMap.get(advocateId)?.specialties.push({
-          createdAt: row.advocate_specialties.createdAt,
-          description: row.specialties.description,
-          title: row.specialties.title,
-          id: row.advocate_specialties.id,
+      if (row.advocate_tags && row.tags && row.tag_types) {
+        advocateMap.get(advocateId)?.tags.push({
+          createdAt: row.advocate_tags.createdAt,
+          description: row.tags.description,
+          title: row.tags.title,
+          tagType: row.tag_types.title as TagType
         });
       }
     }

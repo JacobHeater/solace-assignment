@@ -7,6 +7,7 @@ import { useDebounce } from "use-debounce";
 import { Chip } from "./components/chip";
 import { Button } from "./components/button";
 import { IAdvocate } from "./types/advocate";
+import { TagType } from "./types/tag";
 
 export default function Home() {
   const [advocates, setAdvocates] = useState<IAdvocate[]>([]);
@@ -89,7 +90,7 @@ export default function Home() {
                     <td>{advocate.city}</td>
                     <td className="w-32 text-center">{advocate.degree}</td>
                     <td>
-                      {advocate.specialties.map((s, i) => (
+                      {advocate.tags.filter((tag) => tag.tagType === TagType.Specialty).map((s, i) => (
                         <Chip key={i} text={s.title} />
                       ))}
                     </td>
