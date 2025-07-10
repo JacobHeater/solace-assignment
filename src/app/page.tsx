@@ -7,6 +7,7 @@ import { useDebounce } from "use-debounce";
 import { Chip } from "./components/chip";
 import { Button } from "./components/button";
 import { IAdvocate } from "./types/advocate";
+import { TagType } from "./types/tag";
 import { SortDir } from "@/db/sort/sort-dir";
 import { SelectAdvocate } from "@/db/schema";
 import { toCamelCase } from '@/app/helpers/string/to-camel-case';
@@ -144,32 +145,31 @@ export default function Home() {
                 {['First Name', 'Last Name', 'City', 'Degree', 'Specialties', 'Years of Experience', 'Phone Number', 'View'].map((col, i) => (
                   <th onClick={() => onColHeaderClick(col)} className="px-2 py-1" key={i}>{col}</th>
                 ))}
-                </tr>
-              </thead>
-              <tbody>
-                {advocates.map((advocate) => {
-                  return (
-                    <tr key={advocate.phoneNumber} className="odd:bg-gray-100 h-14">
-                      <td className="pl-5">{advocate.firstName}</td>
-                      <td>{advocate.lastName}</td>
-                      <td>{advocate.city}</td>
-                      <td className="w-32 text-center">{advocate.degree}</td>
-                      <td>
-                        {advocate.specialties.map((s, i) => (
-                          <Chip key={i} text={s.title} />
-                        ))}
-                      </td>
-                      <td>{advocate.yearsOfExperience}</td>
-                      <td>{advocate.phoneNumber}</td>
-                      <td className="px-5">
-                        <Button onClick={() => router.push(`/advocate/${advocate.id}`)}>View</Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+              </tr>
+            </thead>
+            <tbody>
+              {advocates.map((advocate) => {
+                return (
+                  <tr key={advocate.phoneNumber} className="odd:bg-gray-100 h-14">
+                    <td className="pl-5">{advocate.firstName}</td>
+                    <td>{advocate.lastName}</td>
+                    <td>{advocate.city}</td>
+                    <td className="w-32 text-center">{advocate.degree}</td>
+                    <td>
+                      {advocate.tags.filter((tag) => tag.tagType === TagType.Specialty).map((s, i) => (
+                        <Chip key={i} text={s.title} />
+                      ))}
+                    </td>
+                    <td>{advocate.yearsOfExperience}</td>
+                    <td>{advocate.phoneNumber}</td>
+                    <td className="pr-5 text-center">
+                      <Button onClick={() => router.push(`/advocate/${advocate.id}`)}>View</Button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
         <div className="flex flex-row">
           <div className="flex-[0.25] pt-3">

@@ -1,4 +1,4 @@
 export interface IBaseType {
-    id: number | undefined;
+    id?: number;
     createdAt: Date | null | undefined;
 };

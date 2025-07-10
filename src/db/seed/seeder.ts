@@ -1,45 +1,66 @@
 import db from "..";
 import {
-  specialties,
+  tags,
   advocates,
-  AdvocateSpecialties,
-  advocateSpecialties,
+  EntityTags,
+  entityTags,
+  tagTypes,
+  entities,
+  SelectAdvocate,
 } from "../schema";
 import { advocateData } from "./advocates";
-import { specialtiesData, randomSpecialties } from "./specialties";
+import { specialtiesTagsData, randomSpecialties, specialtiesTagTypeData } from "./specialties";
 
 export async function seeder() {
-  const specialtiesRecords = await db
-    .insert(specialties)
-    .values(specialtiesData)
-    .returning();
-  const advocateRecords = await db
-    .insert(advocates)
-    .values(advocateData)
+  const [specialtiesTagType] = await db
+    .insert(tagTypes)
+    .values(specialtiesTagTypeData)
     .returning();
 
-  for (const adv of advocateRecords) {
-    const advocateSpecialtiesEntries: AdvocateSpecialties[] = randomSpecialties(
+  const specialtiesTagsRecords = await db
+    .insert(tags)
+    .values(specialtiesTagsData.map((record) => ({
+      ...record,
+      tagTypeId: specialtiesTagType.id
+    })))
+    .returning();
+
+  const advocateRecords: SelectAdvocate[] = [];
+  for (const advocate of advocateRecords) {
+    const [entity] = await db
+      .insert(entities)
+      .values({})
+      .returning();
+    const [advocateRecord] = await db
+      .insert(advocates)
+      .values(advocate)
+      .returning();
+    advocateRecords.push(advocateRecord);
+  }
+
+  for (const adv of advocateData) {
+    const advocateSpecialtiesEntries: EntityTags[] = randomSpecialties(
       2,
-      specialtiesRecords
-    ).map((spec) => ({
-      advocateId: adv.id,
-      specialtyId: spec.id!,
+      specialtiesTagsRecords
+    ).map((tag) => ({
+      entityId: adv.entityId,
+      tagId: tag.id!,
+      createdAt: null
     }));
 
     await db
-      .insert(advocateSpecialties)
+      .insert(entityTags)
       .values(advocateSpecialtiesEntries)
       .returning();
   }
 
   console.log(`Seeded ${advocateRecords.length} advocates.`);
-  console.log(`Seeded ${specialtiesRecords.length} specialties.`);
+  console.log(`Seeded ${specialtiesTagsRecords.length} specialties.`);
   console.log(`Seeded advocate specialties.`);
 }
 
 export async function reset() {
-  await db.delete(advocateSpecialties);
+  await db.delete(entityTags);
   await db.delete(advocates);
-  await db.delete(specialties);
+  await db.delete(tags);
 }

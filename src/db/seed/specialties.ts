@@ -1,7 +1,12 @@
 import { generateRandomNumber } from "@/app/helpers/random-number";
-import type { Specialties } from "../schema";
+import type { InsertTags, InsertTagTypes } from "../schema";
 
-export const specialtiesData: Specialties[] = [
+export const specialtiesTagTypeData: InsertTagTypes = {
+  title: 'Specialty',
+  description: 'Describes a specialty'
+};
+
+export const specialtiesTagsData: Omit<InsertTags, "tagTypeId">[] = [
   "Bipolar",
   "LGBTQ",
   "Medication/Prescribing",
@@ -29,12 +34,12 @@ export const specialtiesData: Specialties[] = [
   "Learning disorders",
   "Domestic abuse",
 ].map((sp) => ({
-  description: '',
+  description: sp,
   title: sp
 }));
 
-export function randomSpecialties(length: number, specialties: Specialties[]): Specialties[] {
-  const distinctSpecialties = new Set<Specialties>();
+export function randomSpecialties(length: number, specialties: InsertTags[]): InsertTags[] {
+  const distinctSpecialties = new Set<InsertTags>();
 
   while (distinctSpecialties.size < length) {
     const randomIndex = generateRandomNumber(0, specialties.length - 1);

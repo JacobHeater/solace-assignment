@@ -2,12 +2,18 @@ import { IAdvocate } from "@/app/types/advocate";
 import db from "@/db";
 import {
   advocates,
-  AdvocateSpecialties,
-  advocateSpecialties,
+  Entities,
+  entities,
+  EntityTags,
+  entityTags,
   SelectAdvocate,
-  specialties,
-  Specialties,
+  Tags,
+  tags,
+  TagTypes,
+  tagTypes,
 } from "@/db/schema";
+import { IRepository } from "@/db/repositories/repository";
+import { TagType } from "@/app/types/tag";
 import { asc, desc, eq, ilike, or, sql, count } from "drizzle-orm";
 import { IRepository } from "@/db/repositories/repository";
 import { SortDir } from "@/db/sort/sort-dir";
@@ -15,8 +21,10 @@ import { IRepository, PaginatedResult } from "@/db/repositories/repository";
 
 type AmalgamatedType = {
   advocates: SelectAdvocate;
-  advocate_specialties: AdvocateSpecialties | null;
-  specialties: Specialties | null;
+  entities: Entities | null;
+  entity_tags: EntityTags | null; 
+  tags: Tags | null;
+  tag_types: TagTypes | null;
 };
 
 export class AdvocateRepository implements IRepository<IAdvocate> {
@@ -24,13 +32,20 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
     const data = await db
       .select()
       .from(advocates)
-      .leftJoin(
-        advocateSpecialties,
-        eq(advocateSpecialties.advocateId, advocates.id)
+      .leftJoin(entities,
+        eq(entities.id, advocates.entityId)
       )
       .leftJoin(
-        specialties,
-        eq(advocateSpecialties.specialtyId, specialties.id)
+        entityTags,
+        eq(entityTags.entityId, entities.id)
+      )
+      .leftJoin(
+        tags,
+        eq(tags.id, entityTags.tagId)
+      )
+      .leftJoin(
+        tagTypes,
+        eq(tagTypes.id, tags.tagTypeId)
       );
 
     return this.amalgamateJoinedRowsToIAdvocate(data);
@@ -97,12 +112,20 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
       .select()
       .from(advocates)
       .innerJoin(
-        advocateSpecialties,
-        eq(advocateSpecialties.advocateId, advocates.id)
+        entities,
+        eq(entities.id, advocates.entityId)
       )
       .innerJoin(
-        specialties,
-        eq(specialties.id, advocateSpecialties.specialtyId)
+        entityTags,
+        eq(entityTags.entityId, entities.id)
+      )
+      .innerJoin(
+        tags,
+        eq(tags.id, entityTags.tagId)
+      )
+      .innerJoin(
+        tagTypes,
+        eq(tagTypes.id, tags.tagTypeId)
       )
       .where(eq(advocates.id, id));
 
@@ -117,12 +140,20 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
         .select()
         .from(advocates)
         .innerJoin(
-          advocateSpecialties,
-          eq(advocateSpecialties.advocateId, advocates.id)
+          entities,
+          eq(entityTags.entityId, entities.id)
         )
         .innerJoin(
-          specialties,
-          eq(advocateSpecialties.specialtyId, specialties.id)
+          entityTags,
+          eq(entityTags.entityId, advocates.id)
+        )
+        .innerJoin(
+          tags,
+          eq(tags.id, entityTags.tagId)
+        )
+        .innerJoin(
+          tagTypes,
+          eq(tags.tagTypeId, tagTypes.id)
         )
         .where(
           or(
@@ -133,8 +164,8 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
               advocates.degree,
               advocates.phoneNumber,
             ].map((col) => ilike(col, `%${term}%`)),
-            ilike(specialties.title, `%${term}%`),
-            ilike(specialties.description, `%${term}%`),
+            ilike(tags.title, `%${term}%`),
+            ilike(tags.description, `%${term}%`),
             sql`CAST(${
               advocates.yearsOfExperience
             } AS TEXT) ILIKE ${`%${term}%`}`
@@ -156,16 +187,16 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
       if (!advocateMap.has(advocateId)) {
         advocateMap.set(advocateId, {
           ...row.advocates,
-          specialties: [],
+          tags: [],
         });
       }
 
-      if (row.specialties && row.advocate_specialties) {
-        advocateMap.get(advocateId)?.specialties.push({
-          createdAt: row.advocate_specialties.createdAt,
-          description: row.specialties.description,
-          title: row.specialties.title,
-          id: row.advocate_specialties.id,
+      if (row.entity_tags && row.tags && row.tag_types) {
+        advocateMap.get(advocateId)?.tags.push({
+          createdAt: row.entity_tags.createdAt,
+          description: row.tags.description,
+          title: row.tags.title,
+          tagType: row.tag_types.title as TagType
         });
       }
     }

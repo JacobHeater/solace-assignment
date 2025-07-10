@@ -1,5 +1,5 @@
 import { IBaseType } from "./base";
-import { ISpecialty } from "./specialty";
+import { ITag } from "./tag";
 
 export interface IAdvocate extends IBaseType {
     firstName: string;
@@ -8,5 +8,5 @@ export interface IAdvocate extends IBaseType {
     degree: string;
     yearsOfExperience: number;
     phoneNumber: string;
-    specialties: ISpecialty[];
+    tags: ITag[];
 };
