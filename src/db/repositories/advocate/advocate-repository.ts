@@ -5,11 +5,11 @@ import {
   AdvocateSpecialties,
   advocateSpecialties,
   SelectAdvocate,
-  Specialties,
   specialties,
+  Specialties,
 } from "@/db/schema";
-import { eq, ilike, or, sql } from "drizzle-orm";
-import { IRepository } from "@/db/repositories/repository";
+import { count, eq, ilike, or, sql } from "drizzle-orm";
+import { IRepository, PaginatedResult } from "@/db/repositories/repository";
 
 type AmalgamatedType = {
   advocates: SelectAdvocate;
@@ -34,6 +34,47 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
     return this.amalgamateJoinedRowsToIAdvocate(data);
   }
 
+  async findAllByPage(
+    pageNumber: number,
+    pageSize: number
+  ): Promise<PaginatedResult<IAdvocate>> {
+    const [totalResult] = await db.select({
+      total: count()
+    }).from(advocates);
+
+    console.log(pageNumber, pageSize, pageNumber * pageSize);
+
+    const data = await db
+      .select()
+      .from(advocates)
+      .offset(pageNumber * pageSize)
+      .limit(pageSize);
+
+    const returnData: IAdvocate[] = [];
+
+    for (const row of data) {
+      const advSpecialties = await db
+        .select()
+        .from(advocateSpecialties)
+        .innerJoin(specialties,
+          eq(specialties.id, advocateSpecialties.specialtyId)
+        )
+        .where(eq(advocateSpecialties.advocateId, row.id));
+
+      returnData.push({
+        ...row,
+        specialties: advSpecialties.map((sp) => ({
+          ...sp.specialties
+        }))
+      });
+    }
+
+    return {
+      data: returnData,
+      count: totalResult.total
+    };
+  }
+
   async findByIdAsync(id: number): Promise<IAdvocate> {
     const data = await db
       .select()
@@ -48,7 +89,7 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
       )
       .where(eq(advocates.id, id));
 
-    const [advocate] = this.amalgamateJoinedRowsToIAdvocate(data)
+    const [advocate] = this.amalgamateJoinedRowsToIAdvocate(data);
 
     return advocate;
   }
