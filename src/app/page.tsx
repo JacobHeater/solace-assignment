@@ -9,23 +9,39 @@ import { Button } from "./components/button";
 import { IAdvocate } from "./types/advocate";
 
 export default function Home() {
+  const pageSize = 10;
   const [advocates, setAdvocates] = useState<IAdvocate[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [pageNumber, setPageNumber] = useState<number>(0);
+  const [recordCount, setRecordCount] = useState<number>(0);
   const [initialized, setInitialized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
   const router = useRouter();
+
+  const xOfRecordCount = () => {
+    const totalOnPage = (pageNumber + 1) * pageSize;
+
+    if (totalOnPage > recordCount) {
+      const delta = totalOnPage - recordCount;
+      return totalOnPage - delta;
+    }
+
+    return totalOnPage;
+  };
 
   useEffect(() => {
     const fetchAdvocates = async () => {
       setLoading(true);
       console.log("fetching advocates...");
       try {
-        let url = '/api/advocates';
+        const url = new URL(`${window.location.protocol}//${window.location.host}/api/advocates`);
 
         if (debouncedSearchTerm) {
-          url += `?searchTerm=${debouncedSearchTerm}`;
+          url.searchParams.set('searchTerm', debouncedSearchTerm);
         }
+
+        url.searchParams.set('pageNumber', String(pageNumber));
 
         const response = await fetch(url);
 
@@ -34,8 +50,9 @@ export default function Home() {
           setInitialized(false);
           return;
         }
-        const jsonResponse = await response.json();
-        setAdvocates(jsonResponse.data as IAdvocate[]);
+        const { data, count }: { data: IAdvocate[], count?: number } = await response.json();
+        setAdvocates(data as IAdvocate[]);
+        setRecordCount(count || 0);
         setInitialized(true);
       } catch (error) {
         console.error("Failed to fetch advocates:", error);
@@ -45,7 +62,7 @@ export default function Home() {
     };
 
     fetchAdvocates();
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, pageNumber]);
 
   const onSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const searchTerm = e.target.value;
@@ -104,6 +121,16 @@ export default function Home() {
             </tbody>
           </table>
         )}
+        <div className="flex flex-row">
+          <div className="flex-[0.25] pt-3">
+            Showing {xOfRecordCount()} advocates of {recordCount}
+          </div>
+          <div className="flex-[0.75] text-right pt-3">
+            {'a'.repeat(Math.ceil(recordCount / pageSize)).split('').map((_, idx) => (
+              <span key={idx} onClick={() => setPageNumber(idx)} className={`inline select-none cursor-pointer px-2 text-center text-[var(--solace-green)] ${(idx) === pageNumber ? 'underline font-bold' : ''}`}>{idx + 1}</span>
+            ))}
+          </div>
+        </div>
         {!loading && advocates.length === 0 && debouncedSearchTerm.trim() && (
           <div className="text-center">
             <span className="text-2xl align-middle inline-block">🥴</span> No records found matching &quot;{debouncedSearchTerm}&quot;
