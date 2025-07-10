@@ -95,7 +95,7 @@ export default function AdvocateView() {
                             col: 'city'
                         }, {
                             label: 'Specialties',
-                            col: 'specialties'
+                            col: 'tags'
                         }] as AdvocatePropsArray).map((item) => {
 
                             let value: AdvocatePropValue = advocate[item.col];

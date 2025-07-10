@@ -12,17 +12,15 @@ import {
   TagTypes,
   tagTypes,
 } from "@/db/schema";
-import { IRepository } from "@/db/repositories/repository";
 import { TagType } from "@/app/types/tag";
 import { asc, desc, eq, ilike, or, sql, count } from "drizzle-orm";
-import { IRepository } from "@/db/repositories/repository";
 import { SortDir } from "@/db/sort/sort-dir";
 import { IRepository, PaginatedResult } from "@/db/repositories/repository";
 
 type AmalgamatedType = {
   advocates: SelectAdvocate;
   entities: Entities | null;
-  entity_tags: EntityTags | null; 
+  entity_tags: EntityTags | null;
   tags: Tags | null;
   tag_types: TagTypes | null;
 };
@@ -32,41 +30,26 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
     const data = await db
       .select()
       .from(advocates)
-      .leftJoin(entities,
-        eq(entities.id, advocates.entityId)
-      )
-      .leftJoin(
-        entityTags,
-        eq(entityTags.entityId, entities.id)
-      )
-      .leftJoin(
-        tags,
-        eq(tags.id, entityTags.tagId)
-      )
-      .leftJoin(
-        tagTypes,
-        eq(tagTypes.id, tags.tagTypeId)
-      );
+      .leftJoin(entities, eq(entities.id, advocates.entityId))
+      .leftJoin(entityTags, eq(entityTags.entityId, entities.id))
+      .leftJoin(tags, eq(tags.id, entityTags.tagId))
+      .leftJoin(tagTypes, eq(tagTypes.id, tags.tagTypeId));
 
     return this.amalgamateJoinedRowsToIAdvocate(data);
   }
 
   async findAllAsyncSorted(col: keyof SelectAdvocate, dir: SortDir) {
     const drizzleSort = dir === SortDir.ASC ? asc : desc;
-    
+
     const data = await db
       .select()
       .from(advocates)
-      .leftJoin(
-        advocateSpecialties,
-        eq(advocateSpecialties.advocateId, advocates.id)
-      )
-      .leftJoin(
-        specialties,
-        eq(advocateSpecialties.specialtyId, specialties.id)
-      )
+      .leftJoin(entities, eq(entities.id, advocates.entityId))
+      .leftJoin(entityTags, eq(entityTags.entityId, entities.id))
+      .leftJoin(tags, eq(tags.id, entityTags.tagId))
+      .leftJoin(tagTypes, eq(tagTypes.id, tags.tagTypeId))
       .orderBy(drizzleSort(advocates[col]));
-    
+
     return this.amalgamateJoinedRowsToIAdvocate(data);
   }
 
@@ -74,11 +57,15 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
     pageNumber: number,
     pageSize: number
   ): Promise<PaginatedResult<IAdvocate>> {
-    const [totalResult] = await db.select({
-      total: count()
-    }).from(advocates);
+    const [totalResult] = await db
+      .select({
+        total: count(),
+      })
+      .from(advocates);
 
-    console.log(pageNumber, pageSize, pageNumber * pageSize);
+    const data = await db
+      .select()
+      .from(advocates)
       .offset(pageNumber * pageSize)
       .limit(pageSize);
 
@@ -87,23 +74,35 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
     for (const row of data) {
       const advSpecialties = await db
         .select()
-        .from(advocateSpecialties)
-        .innerJoin(specialties,
-          eq(specialties.id, advocateSpecialties.specialtyId)
+        .from(entityTags)
+        .innerJoin(
+          entities,
+          eq(entities.id, entityTags.entityId)
         )
-        .where(eq(advocateSpecialties.advocateId, row.id));
+        .innerJoin(
+          tags,
+          eq(entityTags.tagId, tags.id)
+        )
+        .innerJoin(
+          tagTypes,
+          eq(tags.tagTypeId, tagTypes.id)
+        )
+        .where(eq(entities.id, row.entityId));
 
       returnData.push({
         ...row,
-        specialties: advSpecialties.map((sp) => ({
-          ...sp.specialties
-        }))
+        tags: advSpecialties.map((sp) => ({
+          createdAt: sp.entity_tags.createdAt,
+          description: sp.tags.description,
+          tagType: sp.tag_types.title as TagType,
+          title: sp.tags.title
+        })),
       });
     }
 
     return {
       data: returnData,
-      count: totalResult.total
+      count: totalResult.total,
     };
   }
 
@@ -111,22 +110,10 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
     const data = await db
       .select()
       .from(advocates)
-      .innerJoin(
-        entities,
-        eq(entities.id, advocates.entityId)
-      )
-      .innerJoin(
-        entityTags,
-        eq(entityTags.entityId, entities.id)
-      )
-      .innerJoin(
-        tags,
-        eq(tags.id, entityTags.tagId)
-      )
-      .innerJoin(
-        tagTypes,
-        eq(tagTypes.id, tags.tagTypeId)
-      )
+      .innerJoin(entities, eq(entities.id, advocates.entityId))
+      .innerJoin(entityTags, eq(entityTags.entityId, entities.id))
+      .innerJoin(tags, eq(tags.id, entityTags.tagId))
+      .innerJoin(tagTypes, eq(tagTypes.id, tags.tagTypeId))
       .where(eq(advocates.id, id));
 
     const [advocate] = this.amalgamateJoinedRowsToIAdvocate(data);
@@ -139,22 +126,10 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
       const data = await db
         .select()
         .from(advocates)
-        .innerJoin(
-          entities,
-          eq(entityTags.entityId, entities.id)
-        )
-        .innerJoin(
-          entityTags,
-          eq(entityTags.entityId, advocates.id)
-        )
-        .innerJoin(
-          tags,
-          eq(tags.id, entityTags.tagId)
-        )
-        .innerJoin(
-          tagTypes,
-          eq(tags.tagTypeId, tagTypes.id)
-        )
+        .innerJoin(entities, eq(entityTags.entityId, entities.id))
+        .innerJoin(entityTags, eq(entityTags.entityId, advocates.id))
+        .innerJoin(tags, eq(tags.id, entityTags.tagId))
+        .innerJoin(tagTypes, eq(tags.tagTypeId, tagTypes.id))
         .where(
           or(
             ...[
@@ -196,7 +171,7 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
           createdAt: row.entity_tags.createdAt,
           description: row.tags.description,
           title: row.tags.title,
-          tagType: row.tag_types.title as TagType
+          tagType: row.tag_types.title as TagType,
         });
       }
     }
