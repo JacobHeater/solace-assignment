@@ -8,7 +8,9 @@ import {
   specialties,
   Specialties,
 } from "@/db/schema";
-import { count, eq, ilike, or, sql } from "drizzle-orm";
+import { asc, desc, eq, ilike, or, sql, count } from "drizzle-orm";
+import { IRepository } from "@/db/repositories/repository";
+import { SortDir } from "@/db/sort/sort-dir";
 import { IRepository, PaginatedResult } from "@/db/repositories/repository";
 
 type AmalgamatedType = {
@@ -34,6 +36,25 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
     return this.amalgamateJoinedRowsToIAdvocate(data);
   }
 
+  async findAllAsyncSorted(col: keyof SelectAdvocate, dir: SortDir) {
+    const drizzleSort = dir === SortDir.ASC ? asc : desc;
+    
+    const data = await db
+      .select()
+      .from(advocates)
+      .leftJoin(
+        advocateSpecialties,
+        eq(advocateSpecialties.advocateId, advocates.id)
+      )
+      .leftJoin(
+        specialties,
+        eq(advocateSpecialties.specialtyId, specialties.id)
+      )
+      .orderBy(drizzleSort(advocates[col]));
+    
+    return this.amalgamateJoinedRowsToIAdvocate(data);
+  }
+
   async findAllByPage(
     pageNumber: number,
     pageSize: number
@@ -43,10 +64,6 @@ export class AdvocateRepository implements IRepository<IAdvocate> {
     }).from(advocates);
 
     console.log(pageNumber, pageSize, pageNumber * pageSize);
-
-    const data = await db
-      .select()
-      .from(advocates)
       .offset(pageNumber * pageSize)
       .limit(pageSize);
 
